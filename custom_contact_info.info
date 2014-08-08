@@ -4,4 +4,3 @@ description = Adds a block to the site for specifying contact info.
 core = 7.x
 package = Sandbox
 dependencies[] = block
-dependencies[] = menu
