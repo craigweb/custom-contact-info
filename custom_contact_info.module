@@ -1,0 +1,169 @@
+<?php
+
+/**
+ * @file
+ * Custom module for displaying contact information.
+ */
+
+
+/**
+ * Implements hook_permission().
+ */
+function custom_contact_info_permission() {
+  return array(
+    'administer custom contact info block' => array(
+      'title' => t('Administer custom contact information block'),
+    ),
+  );
+}
+
+
+/**
+ * Implements hook_block_info().
+ */
+function custom_contact_info_block_info() {
+  $blocks = array();
+  $blocks['custom_contact_info_block'] = array(
+    'info' => t('Block: Custom contact information'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  return $blocks;
+}
+
+
+/**
+ * Implements hook_block_configure().
+ */
+function custom_contact_info_block_configure($delta = '') {
+  $form = array();
+  switch ($delta) {
+    case 'custom_contact_info_block':
+      // We only want the configuration form to be visible to users who have
+      // the correct level of access, which is where 'user_access' is handy.
+      if (user_access('administer custom contact info block')) {
+        // Let's get the contents of 'custom_contact_info_data' and load them
+        // into a variable.
+        $contact_info = variable_get('custom_contact_info_data');
+        // Email field configuration options.
+        $form['custom_contact_info_email'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Email address'),
+          '#default_value' => $contact_info['email'],
+          '#size' => 60,
+          '#maxlength' => 128,
+          '#required' => TRUE,
+          '#element_validate' => array('custom_contact_info_form_validate'),
+        );
+        // Telephone field configuration options.
+        $form['custom_contact_info_telephone'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Telephone'),
+          '#default_value' => $contact_info['telephone'],
+          '#size' => 60,
+          '#maxlength' => 128,
+          '#required' => TRUE,
+          '#element_validate' => array('custom_contact_info_form_validate'),
+        );
+        // Address field configuration options.
+        $form['custom_contact_info_address'] = array(
+          '#type' => 'text_format',
+          '#title' => t('Address'),
+          '#default_value' => $contact_info['address']['value'],
+          '#format' => $contact_info['address']['format'],
+        );
+      }
+      break;
+  }
+  return $form;
+}
+
+
+/**
+ * Custom validation handler for submitted contact info block values.
+ */
+function custom_contact_info_form_validate($edit) {
+  // Rather than having a validation handler for each field, let's use the
+  // same one and pass the field name into a switch statement to determine
+  // what action should be taken.
+  switch ($edit['#name']) {
+    case 'custom_contact_info_email':
+      if (!filter_var($edit['#value'], FILTER_VALIDATE_EMAIL)) {
+        form_set_error(
+          'custom_contact_info_email',
+          'The email address entered is invalid'
+        );
+      }
+      break;
+
+    case 'custom_contact_info_telephone':
+      // @ToDo: Write some meaningful telephone number validation.
+      break;
+  }
+}
+
+
+/**
+ * Implements hook_block_save().
+ */
+function custom_contact_info_block_save($delta = '', $edit = array()) {
+  switch ($delta) {
+    case 'custom_contact_info_block':
+      // Setting of the 'custom_contact_info_data' variable contents.
+      variable_set(
+        'custom_contact_info_data',
+        array(
+          'email' => $edit['custom_contact_info_email'],
+          'telephone' => $edit['custom_contact_info_telephone'],
+          'address' => $edit['custom_contact_info_address'],
+        )
+      );
+      break;
+  }
+}
+
+
+/**
+ * Implements hook_block_view().
+ */
+function custom_contact_info_block_view($delta = '') {
+  // Lets set all the block attributes to NULL.
+  $block = array(
+    'subject' => NULL,
+    'content' => NULL,
+  );
+
+  switch ($delta) {
+    case 'custom_contact_info_block':
+      $contact_info = variable_get('custom_contact_info_data');
+
+      // Set the content to a render array using our custom template.
+      $block['content'] = theme(
+        'custom_contact_info',
+        array(
+          'email' => $contact_info['email'],
+          'telephone' => $contact_info['telephone'],
+          'address' => $contact_info['address']['value'],
+        )
+      );
+      break;
+  }
+  return $block;
+}
+
+
+/**
+ * Implements hook_theme().
+ */
+function custom_contact_info_theme() {
+  return array(
+    'custom_contact_info' => array(
+      'template' => 'custom-contact-info',
+      'path' => drupal_get_path('module', 'custom_contact_info') . '/templates',
+      'variables' => array(
+        'email' => NULL,
+        'telephone' => NULL,
+        'address' => NULL,
+      ),
+    ),
+  );
+}

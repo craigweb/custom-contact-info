@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ * Performs module install and uninstall tasks.
+ *
+ */
+
+
+/**
+ * Implements hook_install().
+ */
+function custom_contact_info_install() {
+  variable_set(
+    'custom_contact_info_data', 
+    array(
+      'email' => 'c.perks@ctidigital.com',
+      'telephone' => '+44 (0) 845 620 0014',
+      'address' => array(
+        'value' => '<p>47 Newton Street<br />Manchester<br />M1 1FT</p>',
+        'format' => 'full_html',
+      )
+    )
+  );
+}
+
+
+/**
+ * Implements hook_uninstall().
+ */
+function custom_contact_info_uninstall() {
+  variable_del('custom_contact_info_data');
+}
