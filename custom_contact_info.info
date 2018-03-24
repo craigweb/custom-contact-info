@@ -1,6 +1,6 @@
 
 name = Custom Contact Info
-description = Adds a custom block for specifying contact info.
+description = Adds a custom block for specifying contact information.
 core = 7.x
 package = Sandbox
 dependencies[] = block
